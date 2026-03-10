@@ -1,6 +1,8 @@
 import requests
 from flask import Flask, render_template, jsonify, request, url_for, session
 import folium
+import frcm  # Dette er fire risk-kalkulatoren fra Lars
+import datetime  # Trennger denne for firersikkalkulaotr
 
 app  = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -10,6 +12,7 @@ VALID_USERNAME = 'test'
 VALID_PASSWORD = 'test'
 
 m = folium.Map(location=[62.972077, 10.395563], zoom_start=6)
+
 
 @app.route("/weather")
 def get_weather():
@@ -40,6 +43,21 @@ def get_weather():
 
     place = addr.get("suburb") or addr.get("village") or addr.get("town") or addr.get("city") or "Unknown place"
     county = addr.get("municipality") or addr.get("city") or "Unknown municipality"
+
+    # Fire risk-kalkulering:
+    wd = frcm.WeatherData(data=[
+        frcm.WeatherDataPoint(
+            temperature=float(current["air_temperature"]),
+            humidity=float(current["relative_humidity"]),
+            wind_speed=float(current["wind_speed"]),
+            timestamp=datetime.datetime.now()
+        )
+    ])
+    # Dette er noe tull jeg holder på med
+    # time.time(), current["air_temperature"],
+    # current["relative_humidity"], current["wind_speed"]
+    test1 = frcm.compute(wd)
+    print(test1)
 
     return jsonify({
         "place": place,
