@@ -7,7 +7,7 @@ import pandas as pd
 import io
 import csv
 
-app  = Flask(__name__)
+app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 #Variables
