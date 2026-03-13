@@ -55,7 +55,7 @@ def get_weather():
             temperature=float(current["air_temperature"]),
             humidity=float(current["relative_humidity"]),
             wind_speed=float(current["wind_speed"]),
-            timestamp=now - datetime.timedelta(hours=1)  # Prveious point
+            timestamp=now - datetime.timedelta(hours=1)  # Previous point
         ),
         frcm.WeatherDataPoint(
             temperature=float(current["air_temperature"]),
@@ -77,18 +77,14 @@ def get_weather():
     last_timestamp_string = last_timestamp_pd.strftime("%d. %B, %H:%M").lower()
     last_ttf_float = float(ttf_csv["ttf"].iloc[-1])
 
-    print("hei")
-    print(last_timestamp_string)
-    print(last_ttf_float)
-
     return jsonify({
         "place": place,
         "county": county,
         "temperature": current["air_temperature"],
         "wind_speed": current["wind_speed"],
         "humidity": current["relative_humidity"],
-        "timestamp": last_timestamp_string, 
-        "ttf": last_ttf_float
+        "timestamp": last_timestamp_string,
+        "ttf": f"{last_ttf_float:.2f}"
     })
 
 
