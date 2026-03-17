@@ -10,26 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up SSH key
+      # Step 2: Setup SSH key
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.NREC_SSH_KEY_FOR_GITHUB_ACTIONS }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # Optional: disable strict host key checking
+          # Optional: skip host key checking
           echo -e "Host 158.39.75.130\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 
-      # Step 3: Connect to NREC and update
+      # Step 3: Connect to NREC and update safely
       - name: Update and restart on NREC
         run: |
-          ssh -i ~/.ssh/id_ed25519 ubuntu@158.39.75.130 -p 22 \
-            'cd ~/ADA502-FireGuard && \
-             git reset --hard && \
-             git pull origin main && \
-             source .fire/bin/activate && \
-             pkill -f main.py || true && \
-             python src/ada502_fireguard/main.py &'
+          ssh -i ~/.ssh/id_ed25519 ubuntu@158.39.75.130 -p 22 << 'EOF'
+          cd ~/ADA502-FireGuard
+          git reset --hard
+          git pull origin main
+          source .fire/bin/activate
+          # Kill old process if running
+          pkill -f main.py || true
+          # Start new process in background with nohup and logs
+          nohup python src/ada502_fireguard/main.py > ~/main.log 2>&1 &
+          EOF
