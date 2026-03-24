@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>FireGuard</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
             margin: 0;
@@ -25,10 +26,11 @@
         }
     </style>
 </head>
+
 <body>
 
     <div id="panel">
-        <p>Logged in as: {{username}}</p>
+        <p>Logged in as testing conflicts, Martin wrote this: {{username}}</p>
         <h2>Search Hei Martin jeg skriver her</h2>
         <div id="weatherBox">
             <p>Click the map to see weather</p>
@@ -42,7 +44,7 @@
     <script>
         var map = L.map('map').setView([65.418873, 15.668229], 5);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: 'OpenStreetMap contributors'}).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OpenStreetMap contributors' }).addTo(map);
 
         var norwayBounds = L.latLngBounds(
             [53.3, 2.5],   // Southwest
@@ -53,18 +55,18 @@
 
         var currentMarker = null;
 
-    function getWeather(lat, lon) {
-        fetch(`/weather?lat=${lat}&lon=${lon}`)
-            .then(response => response.json())
-            .then(data => {
+        function getWeather(lat, lon) {
+            fetch(`/weather?lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
 
-                if (data.error) {
-                    document.getElementById("weatherBox").innerHTML =
-                        "<p style='color:red;'>Error loading weather</p>";
-                    return;
-                }
+                    if (data.error) {
+                        document.getElementById("weatherBox").innerHTML =
+                            "<p style='color:red;'>Error loading weather</p>";
+                        return;
+                    }
 
-                document.getElementById("weatherBox").innerHTML = `
+                    document.getElementById("weatherBox").innerHTML = `
                     <h3>Weather Data for ${data.place},${data.county}</h3>
                     <p><strong>Temperature:</strong> ${data.temperature} °C</p>
                     <p><strong>Wind Speed:</strong> ${data.wind_speed} m/s</p>
@@ -72,25 +74,26 @@
                     <p><strong>Timestamp:</strong> ${data.timestamp} </p>
                     <p><strong>Time to flashover:</strong> ${data.ttf} min</p>
                 `;
-            })
-            .catch(error => {
-                console.error("Weather fetch error:", error);
-            });
-    }
-
-    map.on("click", function (e) {
-
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-
-        if (currentMarker !== null) {
-            map.removeLayer(currentMarker);
+                })
+                .catch(error => {
+                    console.error("Weather fetch error:", error);
+                });
         }
 
-        currentMarker = L.marker([lat, lon]).addTo(map);
+        map.on("click", function (e) {
 
-        getWeather(lat, lon);
-    });
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+
+            if (currentMarker !== null) {
+                map.removeLayer(currentMarker);
+            }
+
+            currentMarker = L.marker([lat, lon]).addTo(map);
+
+            getWeather(lat, lon);
+        });
     </script>
 </body>
+
 </html>
