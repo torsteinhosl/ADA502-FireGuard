@@ -65,7 +65,7 @@ def get_weather():
     weather_points = []
 
     for entry in timeseries:
-        # Noe GPT-kode som gjør json om til en filtype som kalkulatoren kan bruke
+        # Noe GPT-kode som gjør json om til en filtype som kalkulatoren kan bruke senere
         timestamp = parser.isoparse(entry["time"])
 
         details = entry["data"]["instant"]["details"]
@@ -83,17 +83,17 @@ def get_weather():
             )
         )
 
+    #Funksjon fra FRC for å få dataen på en form den kan kalkulere med
     weatherData = frcm.WeatherData(data=weather_points)
 
-    # Time to flashover, i forskjellige formater:
-    ttf_customClass = frcm.compute(weatherData)
-    ttf_text = str(ttf_customClass)
-    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"])
+    # Time to flashover, i forskjellige formater som kan benyttes:
+    ttf_customClass = frcm.compute(weatherData)     #Kalkulerer ttf og får ut en rar datatype
+    ttf_text = str(ttf_customClass)                 #Gjør resultatetne om til en rein string
+    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"]) #Gjør stringen om til en csv-fil for senere bruk
 
-    # Returnerer og viser den riktige verdien for tid og fire risk
+    # Blanding av ny og gammel kode. Tid og fire riske for nå-tid lages for seg selv, mens fremtidig tid kommer senere
     first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
-    first_timestamp_string = first_timestamp_pd.strftime(
-        "%d. %B, %H:%M").lower()
+    first_timestamp_string = first_timestamp_pd.strftime("%d. %B, %H:%M").lower() 
 
     first_ttf_float = float(ttf_csv["ttf"].iloc[1])
 
@@ -103,7 +103,9 @@ def get_weather():
         timestamp = ttf_csv["timestamp"].iloc[i]
         ttf_value = float(ttf_csv["ttf"].iloc[i])
         ttf_future += f"{timestamp.strftime('%d. %B, %H:%M').lower()} {ttf_value:.2f} min<br>"
+    # ------------------------------------------------------
 
+    # Setter alt inn i en JSON som html kan bruke
     return jsonify({
         "place": place,
         "county": county,
