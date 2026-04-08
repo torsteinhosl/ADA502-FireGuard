@@ -166,7 +166,7 @@ def index():
 @app.route("/login")
 def login():
     auth_url = keycloak_openid.auth_url(
-        redirect_uri="http://158.39.75.130:8000/callback",
+        redirect_uri="http://localhost:8000/callback", #158.39.75.130
         scope="openid"
     )
     return redirect(auth_url)
@@ -182,7 +182,7 @@ def callback():
     token = keycloak_openid.token(
         grant_type="authorization_code",
         code=code,
-        redirect_uri="http://158.39.75.130:8000/callback"
+        redirect_uri="http://localhost:8000/callback" #158.39.75.130
     )
     print("TOKEN RESPONSE: ", token)
 

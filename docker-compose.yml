@@ -12,7 +12,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
@@ -23,7 +23,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - keycloak_data:/opt/keycloak/data
+      - keycloak_export:/opt/keycloak/data/import
 
 volumes:
-  keycloak_data:
+  keycloak_export:
