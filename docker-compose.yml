@@ -19,5 +19,8 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KC_HTTP_ENABLED=true
       - KC_PROXY=edge
+      - KC_SPI_HOSTNAME_DEFAULT_SSL_REQUIRED=none
     ports:
       - "8080:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
