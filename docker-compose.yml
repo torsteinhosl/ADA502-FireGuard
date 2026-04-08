@@ -23,7 +23,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - keycloak_export:/opt/keycloak/data/import
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak_export:/opt/keycloak/data/import
 
 volumes:
-  keycloak_export:
+  keycloak_data:
