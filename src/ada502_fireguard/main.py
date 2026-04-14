@@ -28,16 +28,16 @@ VALID_PASSWORD = 'test'
 
 m = folium.Map(location=[62.972077, 10.395563], zoom_start=6)
 
-#---------------Sende Emails--------------------
+# ---------------Sende Emails--------------------
 # Example users used to create emails, will be changed later
 users_with_favorites = [
     {
         "email": "669866@stud.hvl.no",
-        "favorites": ["Place A", "Place B", "Place C"],
+        "favorites": [{"lat": 60.36928328136428, "lon": 5.35059928894043}, {"lat": 60.36117711701432, "lon": 5.297470092773437}],
     },
     {
         "email": "jonasedland@gmail.com",
-        "favorites": ["Place D", "Place E"],
+        "favorites": [{"lat": 60.36928328136428, "lon": 5.35059928894043}, {"lat": 60.36117711701432, "lon": 5.297470092773437}],
     },
 ]
 
@@ -48,21 +48,31 @@ SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 
+def get_weather_data_for_email(lat, lon):
+    # Kaller på calculate_weather_data og formarterer det på en måte som virker for email
+    data = calculate_weather_data(lat, lon)
+    if data is None:
+        return "Failed to fetch weather data"
+    # Replace HTML <br> tags with newlines for plain text email
+    ttf_future_text = data['ttf_future'].replace('<br>', '\n')
+    return f"{data['place']}:\n{ttf_future_text}"
+
+
 def build_email_for_user(user: dict) -> EmailMessage:
-    #Makes the email the users will recive
+    # Lager eposten som brukererene får
     recipient_email = user["email"]
     favorites = user.get("favorites", [])
 
-    # Create a simple text listing their favorites
+    # Create the body with fire risk forecasts for each favorite
     if favorites:
-        favorites_list = "\n".join(f"- {place}" for place in favorites)
-        body = (
-            "Hello,\n\n"
-            "Here are your favorited places:\n\n"
-            f"{favorites_list}\n\n"
-            "Best regards,\n"
-            "FireGuard"
-        )
+        body_parts = []
+        for fav in favorites:
+            lat = fav["lat"]
+            lon = fav["lon"]
+            ttf_data = get_weather_data_for_email(lat, lon)
+            body_parts.append(ttf_data)
+        body = "Hello,\n\nHere are your fire risk forecasts for favorited locations:\n\n" + \
+            "\n\n".join(body_parts) + "\n\nBest regards,\nFireGuard"
     else:
         body = (
             "Hello,\n\n"
@@ -79,8 +89,9 @@ def build_email_for_user(user: dict) -> EmailMessage:
 
     return msg
 
+
 def send_daily_notification():
-    #Sends the email
+    # Sender emailen
     print(f"[{datetime.now()}] Running daily notification task...")
 
     if not users_with_favorites:
@@ -117,8 +128,8 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(
     func=send_daily_notification,
     trigger="cron",
-    hour=0,
-    minute=5,
+    hour=18,
+    minute=48,
     id="daily_notification",
     name="Daily notification at midnight",
     replace_existing=True
@@ -127,17 +138,11 @@ scheduler.start()
 
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
-#---------------Sende Emails--------------------
+# ---------------Sende Emails--------------------
 
 
-@app.route("/weather")
-def get_weather():
-    lat = request.args.get("lat")
-    lon = request.args.get("lon")
-
-    if not lat or not lon:
-        return jsonify({"error": "Missing coordinates"}), 400
-
+def calculate_weather_data(lat, lon):
+    # Denne brukes både når email skal lages og når kartet klikkes på
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}"
 
     headers = {
@@ -147,15 +152,9 @@ def get_weather():
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
-        return jsonify({"error": "Failed to fetch weather"}), 500
+        return None
 
     all_data = response.json()
-
-    # -----Dette er her for testing---
-    # path = "C:\\Users\\jonas\\Desktop\\test\\bergen_2026_01_09.json"
-    # with open(path, "r", encoding="utf-8") as f:
-    #    all_data = json.load(f)
-    # --------------------------------------------
 
     geo_url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json"
     geo_res = requests.get(geo_url, headers=headers).json()
@@ -166,18 +165,16 @@ def get_weather():
     county = addr.get("municipality") or addr.get(
         "city") or "Unknown municipality"
 
-    # --------------Fire risk-kalkulering--------------------
     # For å returnere værdata for i dag
     current = all_data["properties"]["timeseries"][0]["data"]["instant"]["details"]
 
+    # --------------Fire risk-kalkulering--------------------
     timeseries = all_data["properties"]["timeseries"]
 
     weather_points = []
 
     for entry in timeseries:
-        # Noe GPT-kode som gjør json om til en filtype som kalkulatoren kan bruke senere
         timestamp = parser.isoparse(entry["time"])
-
         details = entry["data"]["instant"]["details"]
 
         temp = float(details["air_temperature"])
@@ -193,24 +190,19 @@ def get_weather():
             )
         )
 
-    # Funksjon fra FRC for å få dataen på en form den kan kalkulere med
     weatherData = frcm.WeatherData(data=weather_points)
 
-    # Time to flashover, i forskjellige formater som kan benyttes:
-    # Kalkulerer ttf og får ut en rar datatype
     ttf_customClass = frcm.compute(weatherData)
-    ttf_text = str(ttf_customClass)  # Gjør resultatetne om til en rein string
-    # Gjør stringen om til en csv-fil for senere bruk
+    ttf_text = str(ttf_customClass)
     ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"])
 
-    # Blanding av ny og gammel kode. Tid og fire riske for nå-tid lages for seg selv, mens fremtidig tid kommer senere
+    # Current time to flashover
     first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
     first_timestamp_string = first_timestamp_pd.strftime(
         "%d. %B, %H:%M").lower()
-
     first_ttf_float = float(ttf_csv["ttf"].iloc[1])
 
-    # Lager tekst som viser fremtidige tider
+    # Future time to flashover
     ttf_future = ""
     for i in range(2, min(11, len(ttf_csv))):
         timestamp = ttf_csv["timestamp"].iloc[i]
@@ -218,16 +210,40 @@ def get_weather():
         ttf_future += f"{timestamp.strftime('%d. %B, %H:%M').lower()} {ttf_value:.2f} min<br>"
     # ------------------------------------------------------
 
-    # Setter alt inn i en JSON som html kan bruke
-    return jsonify({
+    return {
         "place": place,
         "county": county,
         "temperature": current["air_temperature"],
         "wind_speed": current["wind_speed"],
         "humidity": current["relative_humidity"],
         "timestamp": first_timestamp_string,
-        "ttf_current": f"{first_ttf_float:.2f}",
+        "ttf_current": first_ttf_float,
         "ttf_future": ttf_future
+    }
+
+
+@app.route("/weather")
+def get_weather():
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+
+    if not lat or not lon:
+        return jsonify({"error": "Missing coordinates"}), 400
+
+    data = calculate_weather_data(lat, lon)
+
+    if data is None:
+        return jsonify({"error": "Failed to fetch weather"}), 500
+
+    return jsonify({
+        "place": data["place"],
+        "county": data["county"],
+        "temperature": data["temperature"],
+        "wind_speed": data["wind_speed"],
+        "humidity": data["humidity"],
+        "timestamp": data["timestamp"],
+        "ttf_current": f"{data['ttf_current']:.2f}",
+        "ttf_future": data["ttf_future"]
     })
 
 
