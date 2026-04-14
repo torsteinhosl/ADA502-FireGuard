@@ -3,3 +3,5 @@ folium
 requests
 pandas
 python-keycloak
+APScheduler>=3.10.0
+python-dotenv

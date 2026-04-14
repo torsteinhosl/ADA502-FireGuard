@@ -8,6 +8,16 @@ import io
 from dateutil import parser
 import csv
 import json  # Kun for testning, kan fjernes
+from apscheduler.schedulers.background import BackgroundScheduler  # For å trigge emails
+import atexit
+from datetime import datetime
+import smtplib
+from email.message import EmailMessage
+import os   # Dette har med sikker lagring av passord til fireguard email
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -17,6 +27,107 @@ VALID_USERNAME = 'test'
 VALID_PASSWORD = 'test'
 
 m = folium.Map(location=[62.972077, 10.395563], zoom_start=6)
+
+#---------------Sende Emails--------------------
+# Example users used to create emails, will be changed later
+users_with_favorites = [
+    {
+        "email": "669866@stud.hvl.no",
+        "favorites": ["Place A", "Place B", "Place C"],
+    },
+    {
+        "email": "jonasedland@gmail.com",
+        "favorites": ["Place D", "Place E"],
+    },
+]
+
+# Configuration (loaded from environment variables)
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
+
+
+def build_email_for_user(user: dict) -> EmailMessage:
+    #Makes the email the users will recive
+    recipient_email = user["email"]
+    favorites = user.get("favorites", [])
+
+    # Create a simple text listing their favorites
+    if favorites:
+        favorites_list = "\n".join(f"- {place}" for place in favorites)
+        body = (
+            "Hello,\n\n"
+            "Here are your favorited places:\n\n"
+            f"{favorites_list}\n\n"
+            "Best regards,\n"
+            "FireGuard"
+        )
+    else:
+        body = (
+            "Hello,\n\n"
+            "You currently have no favorited places.\n\n"
+            "Best regards,\n"
+            "FireGuard"
+        )
+
+    msg = EmailMessage()
+    msg["Subject"] = "FireGuard – Daily notification"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = recipient_email
+    msg.set_content(body)
+
+    return msg
+
+def send_daily_notification():
+    #Sends the email
+    print(f"[{datetime.now()}] Running daily notification task...")
+
+    if not users_with_favorites:
+        print(f"[{datetime.now()}] No users to notify.")
+        return
+
+    try:
+        # One SMTP connection for all emails
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+
+            for user in users_with_favorites:
+                msg = build_email_for_user(user)
+                try:
+                    server.send_message(msg)
+                    print(
+                        f"[{datetime.now()}] Email sent to {user['email']}"
+                    )
+                except Exception as e_user:
+                    print(
+                        f"[{datetime.now()}] Failed to send email to "
+                        f"{user['email']}: {e_user}"
+                    )
+
+    except Exception as e:
+        print(f"[{datetime.now()}] SMTP connection/login failed: {e}")
+
+
+# Initialize the scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=send_daily_notification,
+    trigger="cron",
+    hour=0,
+    minute=5,
+    id="daily_notification",
+    name="Daily notification at midnight",
+    replace_existing=True
+)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
+#---------------Sende Emails--------------------
 
 
 @app.route("/weather")
@@ -41,8 +152,8 @@ def get_weather():
     all_data = response.json()
 
     # -----Dette er her for testing---
-    #path = "C:\\Users\\jonas\\Desktop\\test\\bergen_2026_01_09.json"
-    #with open(path, "r", encoding="utf-8") as f:
+    # path = "C:\\Users\\jonas\\Desktop\\test\\bergen_2026_01_09.json"
+    # with open(path, "r", encoding="utf-8") as f:
     #    all_data = json.load(f)
     # --------------------------------------------
 
@@ -54,7 +165,6 @@ def get_weather():
         "town") or addr.get("city") or "Unknown place"
     county = addr.get("municipality") or addr.get(
         "city") or "Unknown municipality"
-
 
     # --------------Fire risk-kalkulering--------------------
     # For å returnere værdata for i dag
@@ -83,17 +193,20 @@ def get_weather():
             )
         )
 
-    #Funksjon fra FRC for å få dataen på en form den kan kalkulere med
+    # Funksjon fra FRC for å få dataen på en form den kan kalkulere med
     weatherData = frcm.WeatherData(data=weather_points)
 
     # Time to flashover, i forskjellige formater som kan benyttes:
-    ttf_customClass = frcm.compute(weatherData)     #Kalkulerer ttf og får ut en rar datatype
-    ttf_text = str(ttf_customClass)                 #Gjør resultatetne om til en rein string
-    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"]) #Gjør stringen om til en csv-fil for senere bruk
+    # Kalkulerer ttf og får ut en rar datatype
+    ttf_customClass = frcm.compute(weatherData)
+    ttf_text = str(ttf_customClass)  # Gjør resultatetne om til en rein string
+    # Gjør stringen om til en csv-fil for senere bruk
+    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"])
 
     # Blanding av ny og gammel kode. Tid og fire riske for nå-tid lages for seg selv, mens fremtidig tid kommer senere
     first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
-    first_timestamp_string = first_timestamp_pd.strftime("%d. %B, %H:%M").lower() 
+    first_timestamp_string = first_timestamp_pd.strftime(
+        "%d. %B, %H:%M").lower()
 
     first_ttf_float = float(ttf_csv["ttf"].iloc[1])
 
@@ -116,7 +229,6 @@ def get_weather():
         "ttf_current": f"{first_ttf_float:.2f}",
         "ttf_future": ttf_future
     })
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -145,6 +257,19 @@ def set_guest():
 def mainpage():
     username = session.get('username', 'Guest')
     return render_template('mainpage.html', username=username)
+
+
+@app.route('/trigger-daily-task', methods=['POST'])
+def trigger_daily_task():
+    """
+    Manual endpoint to trigger the daily notification task.
+    Useful for testing without waiting until midnight.
+    """
+    try:
+        send_daily_notification()
+        return jsonify({"success": True, "message": "Daily task executed successfully"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 if __name__ == '__main__':

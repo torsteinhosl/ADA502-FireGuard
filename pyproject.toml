@@ -8,6 +8,7 @@ dependencies = [
     "flask",
     "folium>=0.20.0",
     "requests>=2.32.5",
+    "python-dotenv",
 ]
 
 [build-system]
