@@ -354,11 +354,10 @@ def mainpage():
         "long": s.longitude
     }
     for s in steder]
-
     favorites = db.session.query(Tettsted).join(
         Favoritter, Favoritter.tettsted_id == Tettsted.id
     ).filter(
-        Favoritter.bruker_id == session["keycloak_id"]
+        Favoritter.bruker_id == user["sub"]
     ).all()
 
     return render_template('mainpage.html', places=places, favorites=favorites, username=user["preferred_username"])
