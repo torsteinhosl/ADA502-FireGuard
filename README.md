@@ -19,3 +19,13 @@ Har du oppdatert i GitHub og skal oppdatere NREC-en, gjør følgende:
 5. " cd ", nå går du ut av prosjektet
 Nå har du oppdatert prosjektet og kan kjøre programmet som vist tidligere.
 
+
+--
+Ved bruk av docker og keycloak kan det være man må sette opp keycloak settings. 
+1. Lag en ny realm med navn fireguard
+2. Lag en ny client som heter fireguard-app
+3. I client set valid redirect uri til http://SERVER-IP:5000/callback og web origins til http://SERVER-IP:5000
+4. I realm settings, velg login, skru på user registration, skru av login with email
+
+I main.py må man og endre alle steder det står localhost til serverens respektive ip. Det samme gjelder i docker-compose.yml
+--

@@ -6,5 +6,5 @@ COPY frcm-0.1.0-py3-none-any.whl .
 RUN pip install --no-cache-dir frcm-0.1.0-py3-none-any.whl
 COPY . .
 ENV PYTHONPATH=/app/src
-EXPOSE 5000
+EXPOSE 8000
 CMD ["python", "-m", "ada502_fireguard.main"]

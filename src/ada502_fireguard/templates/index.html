@@ -3,29 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>FireGuard</title>
-    <script>
-        function submitLogin(event) {
-            event.preventDefault(); // prevent page reload
-
-            const formData = new FormData(document.getElementById('loginForm'));
-
-            fetch('/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                const messageDiv = document.getElementById('message');
-                messageDiv.innerText = data.message;
-                messageDiv.style.color = data.success ? 'green' : 'red';
-
-                if(data.success) {
-                    window.location.href= '/mainpage'
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
     <style>
         body {
             margin: 0;
@@ -35,35 +12,48 @@
         }
 
         #panel {
-            width: 50%;
+            width: 100%;
             padding: 20px;
+            text-align: center;
             box-sizing: border-box;
             background-color: white;
         }
-
-        #map {
-            width: 50%;
-            height: 100%
+        button {
+            display: inline-block;
+            font-size: 18;
+            padding: 12px 24px;
+            margin: px;
+            border-radius: 8px;
+            border: none;
+            background-color:beige;
+            color:black;
         }
+        button:hover {
+            background-color:bisque;
+            transform: scale(1.05);
+        }
+        button:focus {
+            outline: 2px solid bisque;
+            outline-offset: 2px;
+        }
+
     </style>
 </head>
 <body>
     <div id="panel">
-        <img src="{{ url_for('static', filename='FireGuardLogo.jpg') }}" alt="FireGuardLogo" style="width: 200px;"><br>
-
-        <form id="loginForm" onsubmit="submitLogin(event)">
-            <input type="text" id="username" name="username" placeholder="Epost / brukernavn" style="margin-top: 5px"><br>
-            <input type="password" id="password" name="password" placeholder="Passord" style="margin-top: 5px"><br>
-
-            <button type="submit" style="margin-top: 5px">Login</button>
-        </form>
+        <img src="{{ url_for('static', filename='FireGuardLogo.jpg') }}" alt="FireGuardLogo" style="width: 400px;"><br>
+        
         <div id="message" style="margin-top: 10px; font-weight: bold;"></div>
 
-        <button type="button" onclick="continueWithoutLogin()" style="margin-top: 10px;">Continue without login</button>
+        <button onclick="window.location.href='/login'">Log in with key cloak</button><p></p>
+
+        <form id="guestForm" onsubmit="event.preventDefault(); continueWithoutLogin();">
+            <button type="submit" style="margin-top: 10px;">Continue as Guest</button>
+        </form>
 
         <script>
             function continueWithoutLogin() {
-                fetch('/set-guest', {method: 'POST'}).then(() => { window.location.href = '/mainpage';})
+                fetch('/set-guest', {method: 'POST'}).then(response => { if(response.ok) { window.location.href = '/mainpage';} else {alert('Something went wrong');}})
             };
         </script>
 

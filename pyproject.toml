@@ -1,6 +1,6 @@
 [project]
 name = "ada502_fireguard"
-version = "0.1.0"
+version = "0.1.1"
 description = "FireGuard"
 readme = "README.md"
 requires-python = ">=3.12"
