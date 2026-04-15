@@ -345,7 +345,7 @@ def set_guest():
 
 @app.route('/mainpage')
 def mainpage():
-    user = session.get("user")
+    user = session["user"]
     if not user:
         return redirect("/login")
     steder = Tettsted.query.all()
