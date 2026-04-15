@@ -22,6 +22,7 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KC_HTTP_ENABLED=true
       - KC_PROXY=edge
+      - KC_HOSTNAME=158.39.75.130
     ports:
       - "8080:8080"
  
