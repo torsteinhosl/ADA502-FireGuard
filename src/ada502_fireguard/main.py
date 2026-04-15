@@ -16,6 +16,16 @@ keycloak_openid = KeycloakOpenID(
     realm_name="fireguard",
     client_secret_key=None
 )
+from apscheduler.schedulers.background import BackgroundScheduler  # For å trigge emails
+import atexit
+from datetime import datetime
+import smtplib
+from email.message import EmailMessage
+import os   # Dette har med sikker lagring av passord til fireguard email
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -59,14 +69,122 @@ class Favoritter(db.Model):
     bruker_id = db.Column(db.String(100), db.ForeignKey("bruker.keycloak_id"))
     tettsted_id = db.Column(db.Integer, db.ForeignKey("tettsted.id"))
 
-@app.route("/weather")
-def get_weather():
-    lat = request.args.get("lat")
-    lon = request.args.get("lon")
+    
+# ---------------Sende Emails--------------------
+# Example users used to create emails, will be changed later
+users_with_favorites = [
+    {
+        "email": "669866@stud.hvl.no",
+        "favorites": [{"lat": 60.36928328136428, "lon": 5.35059928894043}, {"lat": 60.36117711701432, "lon": 5.297470092773437}],
+    },
+    {
+        "email": "jonasedland@gmail.com",
+        "favorites": [{"lat": 60.36928328136428, "lon": 5.35059928894043}, {"lat": 60.36117711701432, "lon": 5.297470092773437}],
+    },
+]
 
-    if not lat or not lon:
-        return jsonify({"error": "Missing coordinates"}), 400
+# Configuration (loaded from environment variables)
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
+
+def get_weather_data_for_email(lat, lon):
+    # Kaller på calculate_weather_data og formarterer det på en måte som virker for email
+    data = calculate_weather_data(lat, lon)
+    if data is None:
+        return "Failed to fetch weather data"
+    # Replace HTML <br> tags with newlines for plain text email
+    ttf_future_text = data['ttf_future'].replace('<br>', '\n')
+    return f"{data['place']}:\n{ttf_future_text}"
+
+
+def build_email_for_user(user: dict) -> EmailMessage:
+    # Lager eposten som brukererene får
+    recipient_email = user["email"]
+    favorites = user.get("favorites", [])
+
+    # Create the body with fire risk forecasts for each favorite
+    if favorites:
+        body_parts = []
+        for fav in favorites:
+            lat = fav["lat"]
+            lon = fav["lon"]
+            ttf_data = get_weather_data_for_email(lat, lon)
+            body_parts.append(ttf_data)
+        body = "Hello,\n\nHere are your fire risk forecasts for favorited locations:\n\n" + \
+            "\n\n".join(body_parts) + "\n\nBest regards,\nFireGuard"
+    else:
+        body = (
+            "Hello,\n\n"
+            "You currently have no favorited places.\n\n"
+            "Best regards,\n"
+            "FireGuard"
+        )
+
+    msg = EmailMessage()
+    msg["Subject"] = "FireGuard – Daily notification"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = recipient_email
+    msg.set_content(body)
+
+    return msg
+
+
+def send_daily_notification():
+    # Sender emailen
+    print(f"[{datetime.now()}] Running daily notification task...")
+
+    if not users_with_favorites:
+        print(f"[{datetime.now()}] No users to notify.")
+        return
+
+    try:
+        # One SMTP connection for all emails
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+
+            for user in users_with_favorites:
+                msg = build_email_for_user(user)
+                try:
+                    server.send_message(msg)
+                    print(
+                        f"[{datetime.now()}] Email sent to {user['email']}"
+                    )
+                except Exception as e_user:
+                    print(
+                        f"[{datetime.now()}] Failed to send email to "
+                        f"{user['email']}: {e_user}"
+                    )
+
+    except Exception as e:
+        print(f"[{datetime.now()}] SMTP connection/login failed: {e}")
+
+
+# Initialize the scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=send_daily_notification,
+    trigger="cron",
+    hour=00,
+    minute=5,
+    id="daily_notification",
+    name="Daily notification at midnight",
+    replace_existing=True
+)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
+# ---------------Sende Emails--------------------
+
+
+def calculate_weather_data(lat, lon):
+    # Denne brukes både når email skal lages og når kartet klikkes på
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}"
 
     headers = {
@@ -76,15 +194,9 @@ def get_weather():
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
-        return jsonify({"error": "Failed to fetch weather"}), 500
+        return None
 
     all_data = response.json()
-
-    # -----Dette er her for testing---
-    #path = "C:\\Users\\jonas\\Desktop\\test\\bergen_2026_01_09.json"
-    #with open(path, "r", encoding="utf-8") as f:
-    #    all_data = json.load(f)
-    # --------------------------------------------
 
     geo_url = f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json"
     geo_res = requests.get(geo_url, headers=headers).json()
@@ -94,20 +206,19 @@ def get_weather():
         "town") or addr.get("city") or "Unknown place"
     municipality = addr.get("municipality") or addr.get(
         "city") or "Unknown municipality"
-    county = addr.get("county")
+
 
     # --------------Fire risk-kalkulering--------------------
     #For å returnere værdata for i dag
     current = all_data["properties"]["timeseries"][0]["data"]["instant"]["details"]
 
+    # --------------Fire risk-kalkulering--------------------
     timeseries = all_data["properties"]["timeseries"]
 
     weather_points = []
 
     for entry in timeseries:
-        # Noe GPT-kode som gjør json om til en filtype som kalkulatoren kan bruke senere
         timestamp = parser.isoparse(entry["time"])
-
         details = entry["data"]["instant"]["details"]
 
         temp = float(details["air_temperature"])
@@ -123,21 +234,19 @@ def get_weather():
             )
         )
 
-    #Funksjon fra FRC for å få dataen på en form den kan kalkulere med
     weatherData = frcm.WeatherData(data=weather_points)
 
-    # Time to flashover, i forskjellige formater som kan benyttes:
-    ttf_customClass = frcm.compute(weatherData)     #Kalkulerer ttf og får ut en rar datatype
-    ttf_text = str(ttf_customClass)                 #Gjør resultatetne om til en rein string
-    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"]) #Gjør stringen om til en csv-fil for senere bruk
+    ttf_customClass = frcm.compute(weatherData)
+    ttf_text = str(ttf_customClass)
+    ttf_csv = pd.read_csv(io.StringIO(ttf_text), parse_dates=["timestamp"])
 
-    # Blanding av ny og gammel kode. Tid og fire riske for nå-tid lages for seg selv, mens fremtidig tid kommer senere
+    # Current time to flashover
     first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
-    first_timestamp_string = first_timestamp_pd.strftime("%d. %B, %H:%M").lower() 
-
+    first_timestamp_string = first_timestamp_pd.strftime(
+        "%d. %B, %H:%M").lower()
     first_ttf_float = float(ttf_csv["ttf"].iloc[1])
 
-    # Lager tekst som viser fremtidige tider
+    # Future time to flashover
     ttf_future = ""
     for i in range(2, min(11, len(ttf_csv))):
         timestamp = ttf_csv["timestamp"].iloc[i]
@@ -145,8 +254,7 @@ def get_weather():
         ttf_future += f"{timestamp.strftime('%d. %B, %H:%M').lower()} {ttf_value:.2f} min<br>"
     # ------------------------------------------------------
 
-    # Setter alt inn i en JSON som html kan bruke
-    return jsonify({
+    return {
         "place": place,
         "municipality": municipality,
         "county": county,
@@ -154,10 +262,34 @@ def get_weather():
         "wind_speed": current["wind_speed"],
         "humidity": current["relative_humidity"],
         "timestamp": first_timestamp_string,
-        "ttf_current": f"{first_ttf_float:.2f}",
+        "ttf_current": first_ttf_float,
         "ttf_future": ttf_future
-    })
+    }
 
+
+@app.route("/weather")
+def get_weather():
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+
+    if not lat or not lon:
+        return jsonify({"error": "Missing coordinates"}), 400
+
+    data = calculate_weather_data(lat, lon)
+
+    if data is None:
+        return jsonify({"error": "Failed to fetch weather"}), 500
+
+    return jsonify({
+        "place": data["place"],
+        "county": data["county"],
+        "temperature": data["temperature"],
+        "wind_speed": data["wind_speed"],
+        "humidity": data["humidity"],
+        "timestamp": data["timestamp"],
+        "ttf_current": f"{data['ttf_current']:.2f}",
+        "ttf_future": data["ttf_future"]
+    })
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -233,6 +365,19 @@ def mainpage():
 def logout():
     session.clear()
     return redirect("/")
+
+@app.route('/trigger-daily-task', methods=['POST'])
+def trigger_daily_task():
+    """
+    Manual endpoint to trigger the daily notification task.
+    Useful for testing without waiting until midnight.
+    """
+    try:
+        send_daily_notification()
+        return jsonify({"success": True, "message": "Daily task executed successfully"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)

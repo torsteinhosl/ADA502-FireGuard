@@ -24,6 +24,25 @@
             width: 50%;
             height: 100%
         }
+        
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -94,6 +113,15 @@
                 getWeather(lat,long)
             }
         </script>
+
+        <!-- GPT-kode. Knappen sender emails så vi ikke må vente til kl 00-->
+        <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+            <h3>Testing</h3>
+            <button id="triggerTaskBtn" onclick="triggerDailyTask()">
+                Trigger Daily Task (Test)
+            </button>
+            <p id="taskStatus" style="margin-top: 10px; font-size: 14px;"></p>
+        </div>
     </div>
 
     <div id="map"></div>
@@ -101,6 +129,39 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
+        // GPT-kode. Sender emails
+        function triggerDailyTask() {
+            const btn = document.getElementById("triggerTaskBtn");
+            const status = document.getElementById("taskStatus");
+
+            btn.disabled = true;
+            status.innerHTML = "Running...";
+            status.style.color = "blue";
+
+            fetch('/trigger-daily-task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        status.innerHTML = "✓ Task executed successfully!";
+                        status.style.color = "green";
+                    } else {
+                        status.innerHTML = "✗ Error: " + data.message;
+                        status.style.color = "red";
+                    }
+                    btn.disabled = false;
+                })
+                .catch(error => {
+                    status.innerHTML = "✗ Network error: " + error;
+                    status.style.color = "red";
+                    btn.disabled = false;
+                });
+        }
+
         var map = L.map('map').setView([65.418873, 15.668229], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OpenStreetMap contributors' }).addTo(map);
