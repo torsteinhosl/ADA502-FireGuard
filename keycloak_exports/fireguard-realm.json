@@ -515,7 +515,7 @@
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "redirectUris" : [ "http://158.39.75.130:8000/callback" ],
+    "redirectUris" : [ "http://158.39.75.130:8000/*" ],
     "webOrigins" : [ "http://158.39.75.130:8000" ],
     "notBefore" : 0,
     "bearerOnly" : false,

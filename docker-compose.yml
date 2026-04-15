@@ -26,5 +26,3 @@ services:
     ports:
       - "5000:8080"
  
-volumes:
-  keycloak_data:
