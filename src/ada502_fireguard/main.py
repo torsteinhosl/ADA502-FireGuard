@@ -11,7 +11,7 @@ from keycloak import KeycloakOpenID
 from flask_sqlalchemy import SQLAlchemy
 
 keycloak_openid = KeycloakOpenID(
-    server_url="http://158.39.75.130:8080/", #158.39.75.130
+    server_url="http://158.39.75.130:5000/", #158.39.75.130
     client_id="fireguard-app",
     realm_name="fireguard",
     client_secret_key=None
