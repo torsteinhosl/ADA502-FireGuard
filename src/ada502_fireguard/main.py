@@ -385,11 +385,6 @@ def trigger_daily_task():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
-
-
-
 # Database greier
 @app.route("/favorite/<string:tettsted_name>/<string:kommune_name>/<string:fylke_name>", methods=["POST"])
 def add_favorite(tettsted_name, kommune_name, fylke_name):
@@ -425,4 +420,8 @@ def remove_favorite(tettsted_id):
         db.session.delete(fav)
         db.session.commit()
     return "", 204
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000, debug=False)
 
