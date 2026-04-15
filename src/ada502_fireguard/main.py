@@ -77,6 +77,10 @@ class Favoritter(db.Model):
     bruker_id = db.Column(db.String(100), db.ForeignKey("bruker.keycloak_id"))
     tettsted_id = db.Column(db.Integer, db.ForeignKey("tettsted.id"))
 
+@app.before_request
+def debug_request():
+    print("HOST:", request.host)
+    print("PATH:", request.path)
     
 # ---------------Sende Emails--------------------
 # Example users used to create emails, will be changed later
