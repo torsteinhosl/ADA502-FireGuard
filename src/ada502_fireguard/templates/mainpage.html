@@ -56,10 +56,12 @@
         Favorites:
         <select id="favorites" onchange="loadFavorite()">
             <option value="" disabled selected hidden></option>
+            {% for place in favorites %}
             <option data-lat="{{place.lat}}"
                     data-long="{{place.long}}">
                 {{place.name}}
             </option>
+            {%endfor%}
         </select>
 
         <h2>Search
@@ -78,7 +80,7 @@
             <p id="taskStatus" style="margin-top: 10px; font-size: 14px;"></p>
         </div>
         <script>
-            let places = {{places || tojson}};
+            let places = {{places | tojson}};
 
             function addFavorite() {
                 if(!currentTettsted) {
@@ -113,12 +115,9 @@
             function loadFavorite(){
                 let select = document.getElementById("favorites")
                 let option = select.options[select.selectedIndex]
+                if(!option.dataset.lat) return
 
-                let lat = option.dataset.lat
-                let long = option.dataset.long
-
-                if(!lat) return
-                getWeather(lat,long)
+                getWeather(option.dataset.lat, option.dataset.long)
             }
         </script>
     </div>

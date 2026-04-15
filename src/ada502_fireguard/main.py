@@ -385,12 +385,12 @@ if __name__ == '__main__':
 
 
 # Database greier
-@app.route("/favorite/<string::tettsted_name>/<string::kommune_name>/<string::fylke_name>", methods=["POST"])
+@app.route("/favorite/<string:tettsted_name>/<string:kommune_name>/<string:fylke_name>", methods=["POST"])
 def add_favorite(tettsted_name, kommune_name, fylke_name):
     user_id = session.get("keycloak_id")
-    fylke = Fylke.query.select(Fylke).where(Fylke.name == fylke_name).first()
-    kommune_id = Kommune.query.select(Kommune).where(Kommune.name == kommune_name, Kommune.fylke_name == fylke)
-    tettsted = Tettsted.query.select(Tettsted).where(Tettsted.name == tettsted_name, Tettsted.kommune_id == kommune_id.id)
+    fylket = Fylke.query.filter_by(name==fylke_name).first()
+    kommunen = Kommune.query.filter_by(name == kommune_name).filter_by(fylke_name==fylket.name).first()
+    tettsted = Tettsted.query.filter_by(name == tettsted_name).filter_by(kommune_id==kommunen.id)
 
     fav = Favoritter (
         bruker_id = user_id,
