@@ -14,7 +14,6 @@ services:
     image: quay.io/keycloak/keycloak:21.1.1
     volumes:
       - ./keycloak_exports:/opt/keycloak/data/import
-      - keycloak_data:/opt/keycloak/data
     command: start-dev --import-realm
     environment:
       - KEYCLOAK_ADMIN=admin
@@ -25,4 +24,3 @@ services:
       - KC_HOSTNAME=158.39.75.130
     ports:
       - "5000:8080"
- 
