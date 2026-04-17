@@ -450,7 +450,7 @@ def unfavorite():
     favoritten = Favoritter.query.filter_by(bruker_id=user_id, tettsted_id=tettstedet.id)
     if not favoritten:
         return "Stedet er ikke favorittet", 400
-    db.session.remove(favoritten)
+    db.session.delete(favoritten)
     db.session.commit()
 
     return "", 204
