@@ -92,7 +92,9 @@
                     body: JSON.stringify({
                         tettsted: currentTettsted,
                         kommune: currentKommune,
-                        fylke: currentFylke
+                        fylke: currentFylke,
+                        lat: latitude,
+                        long: longitude
                     })
                 }).then(res=>res.json()) 
                    .then(data=>{alert("Added to favorites")})
@@ -182,8 +184,12 @@
         let currentTettsted = null;
         let currentKommune = null;
         let currentFylke = null;
+        let latitude = null;
+        let longitude = null;
 
         function getWeather(lat, lon) {
+            latitude = lat
+            longitude = lon
             fetch(`/weather?lat=${lat}&lon=${lon}`)
                 .then(response => response.json())
                 .then(data => {

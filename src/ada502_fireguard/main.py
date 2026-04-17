@@ -419,10 +419,11 @@ def add_favorite():
         return "ingen fylke med navn " + fylke, 404
     kommunen = Kommune.query.filter_by(name = kommune, fylke_name=fylket.name).first()
     if not kommunen:
-        return "ingen kommune med navn "+ kommune, 404
+        new_kommune(kommune, fylke)
     tettsted = Tettsted.query.filter_by(name = tettsted, kommune_id=kommunen.id).first()
     if not tettsted:
-        return "ingen tettsted med navn " + tettsted, 404
+        kommunen = Kommune.query.filter_by(name = kommune, fylke_name=fylket.name).first()
+        new_tettsted(tettsted, kommunen.id, data.get("lat"), data.get("long"))
 
     fav = Favoritter (
         bruker_id = user_id,
@@ -433,17 +434,26 @@ def add_favorite():
     db.session.commit()
     return "", 204
 
-#@app.route("/favorite/<string:tettsted>", methods=["DELETE"])
-#def remove_favorite(tettsted_id):
-#    user_id = session.get("keycloak_id")
-#    fav = Favoritter.query.filter_by(
-#        bruker_id = user_id,
-#        tettsted_id = tettsted_id
-#    ).first()
-#    if fav:
-#        db.session.delete(fav)
-#        db.session.commit()
-#    return "", 204
+def new_kommune(kommune_navn, fylke):
+    kommun = Kommune(
+        name=kommune_navn,
+        fylke_name = fylke
+    )
+    db.session.add(kommun)
+    db.session.commit()
+    return
+
+def new_tettsted(tettsted_navn, kommune_id, lat, long):
+    tettsted = Tettsted(
+        name=tettsted_navn,
+        kommune_id = kommune_id,
+        latitude = lat,
+        longitude = long
+    )
+    db.session.add(tettsted)
+    db.session.commit()
+    return
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)
