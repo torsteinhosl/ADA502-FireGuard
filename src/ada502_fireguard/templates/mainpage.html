@@ -87,7 +87,7 @@
                     alert("Select a place first!")
                     return
                 }
-                fetch(`${window.location.origin}/favorite/${encodeURIComponent(currentTettsted)}/${encodeURIComponent(currentKommune)}/${encodeURIComponent(currentFylke)}`, {method:"POST", credentials: "include"})
+                fetch(`/favorite`, {method:"POST", credentials: "include"}) <!-- ${encodeURIComponent(currentTettsted)}/${encodeURIComponent(currentKommune)}/${encodeURIComponent(currentFylke)}-->
                     .then(()=>{alert("Added to favorites")})
             }
 

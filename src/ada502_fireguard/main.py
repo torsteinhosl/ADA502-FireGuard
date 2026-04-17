@@ -396,7 +396,7 @@ def trigger_daily_task():
         return jsonify({"success": False, "message": str(e)}), 500
 
 # Database greier
-@app.route("/favorite/<string:tettsted_name>/<string:kommune_name>/<string:fylke_name>", methods=["POST"])
+@app.route("/favorite", methods=["POST"]) #/<string:tettsted_name>/<string:kommune_name>/<string:fylke_name>
 def add_favorite(tettsted_name, kommune_name, fylke_name):
     print(session)
     print(fylke_name,tettsted_name,kommune_name)
