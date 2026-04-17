@@ -398,8 +398,11 @@ def trigger_daily_task():
 # Database greier
 @app.route("/favorite", methods=["POST"])
 def add_favorite():
-    data = request.json
-    print(data)
+    print(request.get_json())
+    data = request.get_json()
+    if not data:
+        return "No JSON received", 400
+
     tettsted = data.get("tettsted")
     kommune = data.get("kommune")
     fylke = data.get("fylke")

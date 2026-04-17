@@ -88,13 +88,13 @@
                     return
                 }
                 
-                fetch(`/favorite`, {method:"POST", credentials: "include", headers: {
+                fetch(`/favorite`, {method:"POST", credentials: "include", headers: { "Content-Type": "application/json"}, 
                     body: JSON.stringify({
                         tettsted: currentTettsted,
                         kommune: currentKommune,
                         fylke: currentFylke
                     })
-                }}).then(res=>res.json()) 
+                }).then(res=>res.json()) 
                    .then(data=>{alert("Added to favorites")})
             }
 
