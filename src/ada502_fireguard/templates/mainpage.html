@@ -177,9 +177,9 @@
             }
             
             function submitNewPlace() {
-                fetch("/nytt-sted", method: "POST", headers:{
+                fetch("/nytt-sted", {method: "POST", headers:{
                     "Content-Type": "application/json"
-                }, {
+                }, 
                     body: JSON.stringify({
                         tettsted: currentTettsted,
                         kommune: currentKommune,
