@@ -80,7 +80,7 @@
         <h2>Search
             <input type="text" id="search" placeholder="" onkeyup="searchPlaces()">
             <ul id="searchResults"></ul></input>
-            <button onclick="addFavorite()">Add to favorites</button>
+            <button id="favoriteBtn" onclick="toggleFavorite()">Add to favorites</button>
         </h2>
         <div id="weatherBox">
             <p>Click the map to see weather</p>
@@ -100,12 +100,21 @@
         <script>
             let places = {{places | tojson}};
 
-            function addFavorite() {
+            function toggleFavorite() {
                 if(!currentTettsted) {
                     alert("Select a place first!")
                     return
                 }
-                
+                let btn = document.getElementById("favoriteBtn")
+
+                if(btn.innerText == "Remove from favorites") {
+                    removeFavorite()
+                } else {
+                    addFavorite()
+                }
+            }
+
+            function addFavorite() {                
                 fetch(`/favorite`, {method:"POST", credentials: "include", headers: { "Content-Type": "application/json"}, 
                     body: JSON.stringify({
                         tettsted: currentTettsted,
@@ -125,8 +134,21 @@
                     option.dataset.long = longitude
 
                     select.appendChild(option)
-                    alert("Added to favorites")
                 })
+                alert("Added to favorites")
+            }
+
+            function removeFavorite() {
+                fetch(`/unfavorite`, {method:"POST", credentials: "include", headers: { "Content-Type": "application/json"}, 
+                    body: JSON.stringify({
+                        tettsted: currentTettsted,
+                        kommune: currentKommune,
+                        fylke: currentFylke,
+                        lat: latitude,
+                        long: longitude
+                    })
+                }).then(res=>res.json())
+                alert("Removed from favorites")
             }
 
             function loadFavorite(){
@@ -155,7 +177,7 @@
                 for(let place of places) {
                     if(place.name.toLowerCase().includes(input)) {
                         let li = document.createElement("li")
-                        li.innerText = place.name
+                        li.innerText = place.name + " ," + place.kommune
 
                         li.onclick = function() {
                             getWeather(place.lat, place.long)
@@ -263,6 +285,21 @@
                     currentTettsted = data.place
                     currentKommune = data.municipality
                     currentFylke = data.county
+
+                    let btn = document.getElementById("favoriteBtn")
+                    let isFavorite = false
+
+                    document.querySelectorAll("#favorites option").forEach(option=> {
+                        if(option.text.trim() === currentTettsted.trim()) {
+                            isFavorite = true
+                        }
+                    })
+
+                    if(isFavorite) {
+                        btn.innerText = "Remove from favorites"
+                    } else {
+                        btn.innerText = "Add to favorites"
+                    }
 
                     document.getElementById("weatherBox").innerHTML = `
                     <h3>Weather Data for ${data.place},${data.municipality}</h3>
