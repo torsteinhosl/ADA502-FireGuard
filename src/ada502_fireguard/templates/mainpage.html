@@ -137,7 +137,10 @@
                 let option = select.options[select.selectedIndex]
                 if(!option.dataset.lat) return
                 
-                map.setView[option.dataset.lat, option.dataset.long]
+                map.setView([option.dataset.lat, option.dataset.long], 10)
+                if (currentMarker !== null) {
+                    map.removeLayer(currentMarker);
+                }
                 currentMarker = L.marker([option.dataset.lat, option.dataset.long]).addTo(map);
 
                 getWeather(option.dataset.lat, option.dataset.long)
