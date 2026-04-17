@@ -152,6 +152,11 @@
                     if(place.name.toLowerCase().includes(input)) {
                         let li = document.createElement("li")
                         li.innerText = place.name
+
+                        li.onclick = function() {
+                            getWeather(place.lat, place.long)
+                            results.innerHTML = ""
+                        }
                         
                         results.appendChild(li)
                     
