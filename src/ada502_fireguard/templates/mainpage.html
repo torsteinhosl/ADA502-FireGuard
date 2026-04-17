@@ -24,6 +24,20 @@
             width: 50%;
             height: 100%
         }
+        #searchResults{
+            list-style: none;
+            padding: 0;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            max-width: 200px;
+        }
+        #searchResults li{
+            padding: 5px;
+            cursor: pointer;
+        }
+        #searchResults li:hover {
+            background-color: #eee;
+        }
         
         button {
             padding: 10px 15px;
@@ -119,17 +133,18 @@
 
                 if(input.length == 0) return
 
-                places.forEach(place=> {
-                    if(place.name.toLowerCase().includes(input)) {
-                        let li = document.createElement("li")
-                        li.innerText = place.name
-                        li.onclick = function() {
-                            getWeather(place.lat, place.long)
-                            results.innerHTML = ""
-                        }
-                        results.appendChild(li)
+                let matches = places.filter(p=> p.name.toLowerCase().include(input).slice(0,5))
+                
+                matches.forEach(place=> {
+                    let li = document.createElement("li")
+                    li.innerText = place.name
+                    li.onclick = function() {
+                        getWeather(place.lat, place.long)
+                        results.innerHTML = ""
                     }
+                    results.appendChild(li)
                 })
+                
             }
 
             function loadFavorite(){
