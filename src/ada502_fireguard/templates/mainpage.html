@@ -28,7 +28,6 @@
             list-style: none;
             padding: 0;
             margin-top: 5px;
-            border: 1px solid #ccc;
             max-width: 200px;
         }
         #searchResults li{
@@ -79,7 +78,8 @@
         </select>
 
         <h2>Search
-            <input type="text" id="search" placeholder="" onkeyup="searchPlaces()"><ul id="searchResults"></ul></input>
+            <input type="text" id="search" placeholder="" onkeyup="searchPlaces()">
+            <ul id="searchResults"></ul></input>
             <button onclick="addFavorite()">Add to favorites</button>
         </h2>
         <div id="weatherBox">
@@ -125,28 +125,6 @@
                 })
             }
 
-            function searchPlaces(){
-                let input = document.getElementById("search").value.toLowerCase()
-                let results = document.getElementById("searchResults")
-
-                results.innerHTML = ""
-
-                if(input.length == 0) return
-
-                let matches = places.filter(p=> p.name.toLowerCase().include(input).slice(0,5))
-                
-                matches.forEach(place=> {
-                    let li = document.createElement("li")
-                    li.innerText = place.name
-                    li.onclick = function() {
-                        getWeather(place.lat, place.long)
-                        results.innerHTML = ""
-                    }
-                    results.appendChild(li)
-                })
-                
-            }
-
             function loadFavorite(){
                 let select = document.getElementById("favorites")
                 let option = select.options[select.selectedIndex]
@@ -160,6 +138,29 @@
 
                 getWeather(option.dataset.lat, option.dataset.long)
             }
+            
+            function searchPlaces(){
+                let input = document.getElementById("search").value.toLowerCase()
+                let results = document.getElementById("searchResults")
+
+                results.innerHTML = ""
+
+                if(input.length == 0) return
+
+                let matches = places.filter(p=> p.name.toLowerCase().include(input))
+                
+                matches.forEach(place=> {
+                    let li = document.createElement("li")
+                    li.innerText = place.name
+                    li.onclick = function() {
+                        getWeather(place.lat, place.long)
+                        results.innerHTML = ""
+                    }
+                    results.appendChild(li)
+                })
+                
+            }
+
         </script>
     </div>
 
