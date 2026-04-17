@@ -156,8 +156,13 @@
                         li.onclick = function() {
                             getWeather(place.lat, place.long)
                             results.innerHTML = ""
+                            map.setView([place.lat, place.long], 10)
+                            if (currentMarker !== null) {
+                                map.removeLayer(currentMarker);
+                            }
+                            currentMarker = L.marker([place.lat, place.long]).addTo(map);
                         }
-                        
+
                         results.appendChild(li)
                     
                         count++
