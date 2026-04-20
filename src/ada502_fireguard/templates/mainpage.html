@@ -378,7 +378,7 @@
                 if(!days[date]) days[date] = []
                 days[date].push(entry)
             })
-            Object.keys(days).slice(0,7).forEach(date=> {
+            Object.keys(days).slice(0,4).forEach(date=> {
                 let btn = document.createElement("button")
                 let d = new Date(date)
                 btn.innerText = d.toLocaleDateString("nb-NO", {

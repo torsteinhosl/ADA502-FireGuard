@@ -277,7 +277,6 @@ def calculate_weather_data(lat, lon):
         })
 
     # ------------------------------------------------------
-    forecast.pop()
     return {
         "place": place,
         "municipality": municipality,
