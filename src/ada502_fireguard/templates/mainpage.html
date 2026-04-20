@@ -40,21 +40,13 @@
             background-color: #eee;
         }
 
-        #forecastModules {
-            border:2px solid red;
-            min-height: 40px;
-        }
-        #forecastDetails {
-            border:2px solid blue;
-            min-height: 40px;
-        }
-
         #forecastModules button {
             margin:4px;
             padding:8px;
             border-radius:6px;
             border:none;
             background-color: #eaeaea;
+            color: black;
             cursor:pointer;
         }
         #forecastDetails div{
@@ -80,6 +72,15 @@
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
+        }
+
+        .weather-grid {
+            display:grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap:10px;
+            text-align: center;
+            padding:10px;
+            
         }
     </style>
 </head>
@@ -346,12 +347,18 @@
                     }
 
                     document.getElementById("weatherBox").innerHTML = `
-                    <h3>Weather Data for ${data.place},${data.municipality}</h3>
-                    <p><strong>Temperature:</strong> ${data.temperature} °C</p>
-                    <p><strong>Wind Speed:</strong> ${data.wind_speed} m/s</p>
-                    <p><strong>Humidity:</strong> ${data.humidity} %</p>
-                    <p><strong>Timestamp:</strong> ${data.timestamp} </p>
-                    <p><strong>Time to flashover:</strong> ${data.ttf_current} min</p>
+                    <div class="weather-grid">
+                        <h3>Weather Data for ${data.place}, ${data.municipality} at ${data.timestamp}</h3>
+                        <div><strong>Temperature</strong></div>
+                        <div><strong>Wind Speed</strong></div>
+                        <div><strong>Humidity</strong></div>
+                        <div><strong>Time to flashover</strong></div>
+
+                        <div>${data.temperature} °C</div>
+                        <div>${data.wind_speed}m/s</div>
+                        <div>${data.humidity}%</div>
+                        <div>${data.ttf_current} min</div>
+                    </div>
                     `
                     renderForecast(data.forecast)
                 })
