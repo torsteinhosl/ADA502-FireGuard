@@ -343,8 +343,8 @@
                     <p><strong>Humidity:</strong> ${data.humidity} %</p>
                     <p><strong>Timestamp:</strong> ${data.timestamp} </p>
                     <p><strong>Time to flashover:</strong> ${data.ttf_current} min</p>
-                `;
-                renderForecast(data.forecast)
+                    `
+                    renderForecast(data.forecast)
                 })
                 .catch(error => {
                     console.error("Weather fetch error:", error);
