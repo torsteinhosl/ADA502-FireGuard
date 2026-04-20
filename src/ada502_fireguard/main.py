@@ -186,34 +186,6 @@ def send_daily_notification():
 
     except Exception as e:
         print(f"[{datetime.now()}] SMTP connection/login failed: {e}")
-
-
-# Initialize the scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(
-    func=send_daily_notification,
-    trigger="cron",
-    hour=00,
-    minute=5,
-    id="daily_notification",
-    name="Daily notification at midnight",
-    replace_existing=True
-)
-scheduler.add_job(
-    func=save_midday_weather,
-    trigger="cron",
-    hour=0,
-    minute=10,
-    id="save_midday_weather",
-    name="Saving midday weather",
-    replace_existing=True
-)
-scheduler.start()
-
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
-# ---------------Sende Emails--------------------
-
 def save_midday_weather():
     tettsteder = db.session.query(Tettsted.id, Tettsted.latitude, Tettsted.longitude).all()
 
@@ -247,6 +219,32 @@ def save_midday_weather():
             db.session.add(record)
         db.session.commit()
 
+
+# Initialize the scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=send_daily_notification,
+    trigger="cron",
+    hour=00,
+    minute=5,
+    id="daily_notification",
+    name="Daily notification at midnight",
+    replace_existing=True
+)
+scheduler.add_job(
+    func=save_midday_weather,
+    trigger="cron",
+    hour=0,
+    minute=10,
+    id="save_midday_weather",
+    name="Saving midday weather",
+    replace_existing=True
+)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
+# ---------------Sende Emails--------------------
 
 
 def calculate_weather_data(lat, lon):
