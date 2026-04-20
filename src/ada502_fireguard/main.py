@@ -313,7 +313,7 @@ def get_weather():
         "humidity": data["humidity"],
         "timestamp": data["timestamp"],
         "ttf_current": f"{data['ttf_current']:.2f}",
-        "ttf_future": data["ttf_future"]
+        "forecast": data["forecast"]
     })
 
 
