@@ -263,23 +263,25 @@ def calculate_weather_data(lat, lon):
     weather_lookup = {}
 
     for entry in timeseries:
-        time_key = entry["time"]
+        time_key = entry["time"].replace("+00:00", "Z")
         weather_lookup[time_key] = entry["data"]["instant"]["details"]
 
     for i in range(1, len(ttf_csv)):
         timestamp = ttf_csv["timestamp"].iloc[i]
         ttf_value = float(ttf_csv["ttf"].iloc[i])
 
-        weather = weather_lookup.get(timestamp.isoformat())
+        time_key = timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        weather = weather_lookup.get(time_key)
 
         if not weather:
             continue
 
         forecast.append({
             "time": timestamp.isoformat(),
-            "temperature": entry["air_temperature"],
-            "wind_speed": entry["wind_speed"],
-            "humidity": entry["relative_humidity"],
+            "temperature": weather["air_temperature"],
+            "wind_speed": weather["wind_speed"],
+            "humidity": weather["relative_humidity"],
             "ttf": round(ttf_value, 2)
         })
     # ------------------------------------------------------
