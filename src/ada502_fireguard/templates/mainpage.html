@@ -36,6 +36,20 @@
         #searchResults li:hover {
             background-color: #eee;
         }
+
+        #forecastModules button {
+            margin:4px;
+            padding:8px;
+            border-radius:6px;
+            border:none;
+            background-color: #eaeaea;
+            cursor:pointer;
+        }
+        #forecastDetails div{
+            border:1px solid #ccc;
+            margin:6px 0;
+            padding:8px;
+        }
         
         button {
             padding: 10px 15px;
@@ -84,6 +98,8 @@
         <div id="weatherBox">
             <p>Click the map to see weather</p>
         </div>
+        <div id="forecastModules"></div>
+        <div id="forecastDetails"></div>
         <!-- GPT-kode. Knappen sender emails så vi ikke må vente til kl 00-->
         <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
             <h3>Testing</h3>
@@ -189,7 +205,7 @@
                 for(let place of places) {
                     if(place.name.toLowerCase().includes(input)) {
                         let li = document.createElement("li")
-                        li.innerText = place.name + " ," + place.kommune
+                        li.innerText = place.name + ", " + place.kommune
 
                         li.onclick = function() {
                             getWeather(place.lat, place.long)
@@ -320,12 +336,56 @@
                     <p><strong>Humidity:</strong> ${data.humidity} %</p>
                     <p><strong>Timestamp:</strong> ${data.timestamp} </p>
                     <p><strong>Time to flashover:</strong> ${data.ttf_current} min</p>
-                    <p><strong>Future time to flashover:</strong> <span style="color: darkred;">(make this pretty later)</span> <br> ${data.ttf_future}</p>
                 `;
+                renderForecast(data.forecast)
                 })
                 .catch(error => {
                     console.error("Weather fetch error:", error);
                 });
+        }
+
+        function renderForecast(forecast) {
+            let modules = document.getElementById("forecastModules")
+            modules.innerHTML = ""
+
+            let days = {}
+
+            forecast.forEach(entry => {
+                let date = entry.time.split("T")[0]
+                if(!days[date]) days[date] = []
+                days[date].push(entry)
+            })
+            Object.keys(days).slice(0,7).forEach(date=> {
+                let btn = document.createElement("button")
+                let d = new Date(date)
+                btn.innerText = d.toLocaleDateString("nb-NO", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short"
+                })
+                bt.onclick = () => showDay(days[date])
+                modules.appendChild(btn)
+            })
+        }
+
+        function showDay(entries) {
+            let container = document.getElementById("forecastDetails")
+            container.innerHTML=""
+
+            entries.forEach(entry=> {
+                let date = new Date(entry.time)
+                if(date.getHours() % 6 !== 0) return
+                let div = document.createElement("div")
+
+                div.innerHTML = `
+                <b>${date.getHours()}:00</b><br>
+                Temp: ${entry.temperature} °C <br>
+                Wind: ${entry.wind_speed} m/s<br>
+                Humidity: ${entry.humidity}% <br>
+                Time to flashover: ${entry.ttf} min
+                `
+                container.appendChild(div)
+            })
         }
 
         map.on("click", function (e) {
