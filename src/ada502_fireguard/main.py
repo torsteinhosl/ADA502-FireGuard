@@ -254,34 +254,25 @@ def calculate_weather_data(lat, lon):
 
     # Current time to flashover
     first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
-    first_timestamp_string = first_timestamp_pd.strftime(
-        "%d. %B, %H:%M").lower()
+    first_timestamp_string = first_timestamp_pd.strftime("%d. %B, %H:%M").lower()
     first_ttf_float = float(ttf_csv["ttf"].iloc[1])
 
     # Future time to flashover
     forecast = []
-    weather_lookup = {}
 
-    for entry in timeseries:
-        time_key = entry["time"].replace("+00:00", "Z")
-        weather_lookup[time_key] = entry["data"]["instant"]["details"]
+    limit = min(len(ttf_csv), len(timeseries))
 
-    for i in range(1, len(ttf_csv)):
+    for i in range(1, limit):
         timestamp = ttf_csv["timestamp"].iloc[i]
         ttf_value = float(ttf_csv["ttf"].iloc[i])
 
-        time_key = timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        weather = weather_lookup.get(time_key)
-
-        if not weather:
-            continue
+        entry = timeseries[i]["data"]["instant"]["details"]
 
         forecast.append({
             "time": timestamp.isoformat(),
-            "temperature": weather["air_temperature"],
-            "wind_speed": weather["wind_speed"],
-            "humidity": weather["relative_humidity"],
+            "temperature": entry["air_temperature"],
+            "wind_speed": entry["wind_speed"],
+            "humidity": entry["relative_humidity"],
             "ttf": round(ttf_value, 2)
         })
     # ------------------------------------------------------
