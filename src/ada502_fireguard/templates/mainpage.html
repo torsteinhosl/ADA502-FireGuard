@@ -114,17 +114,18 @@
         <div id="forecastModules"></div>
         <div id="forecastDetails"></div>
         <!-- GPT-kode. Knappen sender emails så vi ikke må vente til kl 00-->
+        <!--
         <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
             <h3>Testing</h3>
             <button id="triggerTaskBtn" onclick="triggerDailyTask()">
                 Trigger Daily Task (Test)
             </button>
-            <p id="taskStatus" style="margin-top: 10px; font-size: 14px;"></p> -->
+            <p id="taskStatus" style="margin-top: 10px; font-size: 14px;"></p>
 
             <button id="submitPlace" onclick="submitNewPlace()">
                 Submit place
             </button>
-            <button id="saveWeatherToday" onclick="saveNewDay()">Save the day!</button>
+            <button id="saveWeatherToday" onclick="saveNewDay()">Save the day!</button>-->
         </div>
         <script>
             let places = {{ places | tojson}};
