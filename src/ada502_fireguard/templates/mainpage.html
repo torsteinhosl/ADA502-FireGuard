@@ -383,7 +383,7 @@
             fetch(`/history_dates?lat=${lat}&lon=${lon}`)
                 .then(r => r.json())
                 .then(data => {
-                    let select = document.getElemntById("historyDates")
+                    let select = document.getElementById("historyDates")
                     select.innerHTML = '<option value="" disabled selected hidden>Historic data</option>'
 
                     data.forEach(row => {
@@ -449,11 +449,13 @@
 
             entries.forEach(entry => {
                 let date = new Date(entry.time)
-                if (date.getHours() % 6 !== 0) return
+                //Because of timezones the values are two hours of. This is a simple but bad fix
+                if ((date.getHours() - 2) % 6 !== 0) return
                 let div = document.createElement("div")
 
+                //Because of timezones the values are two hours of. This is a simple but bad fix
                 div.innerHTML = `
-                <b>${date.getHours()}:00</b><br>
+                <b>${date.getHours() - 2}:00</b><br>
                 Temp: ${entry.temperature} °C <br>
                 Wind: ${entry.wind_speed} m/s<br>
                 Humidity: ${entry.humidity}% <br>

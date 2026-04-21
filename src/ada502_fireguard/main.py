@@ -346,17 +346,17 @@ def calculate_weather_data(lat, lon):
 
     print(ttf_csv)  # Denne er her for testing lol
 
-    # Current time to flashover
-    first_timestamp_pd = ttf_csv["timestamp"].iloc[1]
+    # Calculate how many historic data points were added
+    historic_count = len(weatherdata_past)
+
+    # Current time to flashover - use same logic as forecast
+    first_timestamp_pd = ttf_csv["timestamp"].iloc[historic_count + 1]
     first_timestamp_string = first_timestamp_pd.strftime(
         "%d. %B, %H:%M").lower()
-    first_ttf_float = float(ttf_csv["ttf"].iloc[1])
+    first_ttf_float = float(ttf_csv["ttf"].iloc[historic_count + 1])
 
     # Future time to flashover
     forecast = []
-
-    # Calculate how many historic data points were added
-    historic_count = len(weatherdata_past)
 
     # Only iterate through the timeseries_future entries
     for i in range(1, len(timeseries_future)):
