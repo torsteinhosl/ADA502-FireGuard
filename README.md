@@ -16,7 +16,8 @@ Slik kjører du prosjektet lokalt:
 3. Kjør:
 
    docker compose up --build
+   
+Dette vil starte applikasjonen lokalt via Docker Compose.
 
 For at epostfunksjonaliteten skal virke, må det ligges en .env-fil med brukernavn og passord i mappen. Denne skal av sikkerhetsgrunner ikke ligge på github, så ta kontakt med Jonas Edland om det skulle bli relevant å legge til filen.
 
-Dette vil starte applikasjonen lokalt via Docker Compose.
