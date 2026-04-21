@@ -139,7 +139,9 @@ def build_email_for_user(user: dict) -> EmailMessage:
             body_parts.append(ttf_data)
         body = "Hello,\n\nHere are your fire risk forecasts for favorited locations:\n\n" + \
             "\n\n".join(body_parts) + "\n\nBest regards,\nFireGuard"
+        app.logger.info("Email contents: here are your favorites")
     else:
+        app.logger.info("Email contents: you have no favorite places")
         body = (
             "Hello,\n\n"
             "You currently have no favorited places.\n\n"
@@ -179,9 +181,9 @@ def send_daily_notification():
                 })
 
         users_with_favorites = list(users_with_favorites.values())
-        app.logger.info(users_with_favorites)
 
         if not users_with_favorites:
+            app.logger.info("No users to notify")
             print(f"[{datetime.now()}] No users to notify.")
             return
 
@@ -197,10 +199,12 @@ def send_daily_notification():
                     msg = build_email_for_user(user)
                     try:
                         server.send_message(msg)
+                        app.logger.info("Email sent")
                         print(
                             f"[{datetime.now()}] Email sent to {user['email']}"
                         )
                     except Exception as e_user:
+                        app.logger.info("Failed to send email to a user")
                         print(
                             f"[{datetime.now()}] Failed to send email to "
                             f"{user['email']}: {e_user}"
@@ -208,8 +212,7 @@ def send_daily_notification():
 
         except Exception as e:
             print(f"[{datetime.now()}] SMTP connection/login failed: {e}")
-            import traceback
-            print(traceback.format_exc())
+            app.logger.info("SMTP connection failed")
             return jsonify({"success":False, "message":str(e)}), 500
 
 
