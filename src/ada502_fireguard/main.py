@@ -10,6 +10,7 @@ import csv
 from keycloak import KeycloakOpenID
 from flask_sqlalchemy import SQLAlchemy
 import time
+from datetime import date
 
 keycloak_openid = KeycloakOpenID(
     server_url="http://keycloak:8080/", #158.39.75.130
@@ -190,16 +191,17 @@ def send_daily_notification():
 def save_midday_weather():
     with app.app_context():
         tettsteder = db.session.query(Tettsted.id, Tettsted.latitude, Tettsted.longitude).all()
+        today = date.today()
 
         for t in tettsteder:
             time.sleep(5)
             data = calculate_weather_data(t.latitude, t.longitude)
             if not data:
                 continue
-        
+            
             for entry in data["forecast"]:
                 timestamp = parser.isoparse(entry["time"])
-                if timestamp.hour != 12:
+                if timestamp.hour != 12 or timestamp.date() != today:
                     continue
             
                 dato = timestamp.date()
