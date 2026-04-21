@@ -364,10 +364,11 @@ def calculate_weather_data(lat, lon):
         ttf_index = historic_count + i
 
         if ttf_index < len(ttf_csv):
-            timestamp = ttf_csv["timestamp"].iloc[ttf_index]
             ttf_value = float(ttf_csv["ttf"].iloc[ttf_index])
 
             entry = timeseries_future[i]["data"]["instant"]["details"]
+            # Use the timestamp directly from the API response
+            timestamp = parser.isoparse(timeseries_future[i]["time"])
 
             forecast.append({
                 "time": timestamp.isoformat(),
