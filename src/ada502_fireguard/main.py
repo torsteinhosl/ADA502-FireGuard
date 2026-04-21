@@ -163,6 +163,12 @@ def send_daily_notification():
         users_with_favorites = {}
 
         for email,lat,lon in emailrows:
+            if email not in users_with_favorites:
+                users_with_favorites[email] = {
+                    "email": email,
+                    "favorites": []
+                }
+
             users_with_favorites[email]["favorites"].append({
                 "lat": lat,
                 "lon": lon
