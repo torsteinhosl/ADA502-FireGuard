@@ -158,7 +158,7 @@ def send_daily_notification():
     print(f"[{datetime.now()}] Running daily notification task...")
     with app.app_context():
 
-        emailrows = (db.session.query(Bruker.email, Tettsted.latitude, Tettsted.longitude).join(Favoritter, Bruker.id == Favoritter.bruker_id).join(Tettsted, Favoritter.tettsted_id == Tettsted.id).all())
+        emailrows = (db.session.query(Bruker.email, Tettsted.latitude, Tettsted.longitude).join(Favoritter, Bruker.keycloak_id == Favoritter.bruker_id).join(Tettsted, Favoritter.tettsted_id == Tettsted.id).all())
 
         users_with_favorites = {}
 
