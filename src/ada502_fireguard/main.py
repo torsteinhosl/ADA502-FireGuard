@@ -220,6 +220,7 @@ def save_midday_weather():
                 )
                 db.session.add(record)
             db.session.commit()
+            return "Recorded weather data", 204
 
 
 # Initialize the scheduler
