@@ -120,7 +120,7 @@ def get_weather_data_for_email(lat, lon):
     if data is None:
         return "Failed to fetch weather data"
     # Replace HTML <br> tags with newlines for plain text email
-    ttf_future_text = data['ttf_future'].replace('<br>', '\n')
+    ttf_future_text = data['forecast'].replace('<br>', '\n')
     return f"{data['place']}:\n{ttf_future_text}"
 
 
