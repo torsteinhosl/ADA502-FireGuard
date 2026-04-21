@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os   # Dette har med sikker lagring av passord til fireguard email
 from email.message import EmailMessage
 import smtplib
-from datetime import datetime
+from datetime import datetime, time
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler  # For å trigge emails
 import requests
@@ -311,7 +311,7 @@ def calculate_weather_data(lat, lon):
 
     # Lagrer både fortidig og fremtidig værdata i listen
     for temp, hum, wind, dato in weatherdata_past:
-        timestamp = datetime.combine(dato, datetime.time(12, 0))
+        timestamp = datetime.combine(dato, time(12, 0))
         weather_points.append(
             frcm.WeatherDataPoint(
                 temperature=temp,
