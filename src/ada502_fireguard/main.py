@@ -79,7 +79,7 @@ class Favoritter(db.Model):
     tettsted_id = db.Column(db.Integer, db.ForeignKey("tettsted.id"))
 
 class HistoriskData(db.Model):
-    __tablename__ = "historiskData"
+    __tablename__ = "historiskdata"
     id = db.Column(db.Integer, primary_key=True)
     tettsted_id = db.Column(db.Integer, db.ForeignKey("tettsted.id"))
     dato = db.Column(db.Date)
