@@ -674,6 +674,8 @@ def nytt_sted():
 def history_dates():
     lat = request.args.get("lat")
     long = request.args.get("long")
+    app.logger.info(lat)
+    app.logger.info(long)
 
     tettsted = Tettsted.query.filter_by(latitude=lat, longitude=long).first()
     app.logger.info(tettsted)
