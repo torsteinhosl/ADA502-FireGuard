@@ -639,12 +639,12 @@ def history_dates():
     long = request.args.get("long")
 
     tettsted = Tettsted.query.filter_by(latitude=lat, longitude=long).first()
-
+    app.logger.info(tettsted)
     if not tettsted:
         return jsonify([])
 
-    rows = HistoriskData.query.filter_by(
-        tettsted_id=tettsted.id).order_by(HistoriskData.dato.desc()).all()
+    rows = HistoriskData.query.filter_by(tettsted_id=tettsted.id).order_by(HistoriskData.dato.desc()).all()
+    app.logger.info(rows)
 
     return jsonify([{
         "date": r.dato.isoformat(),

@@ -356,7 +356,7 @@
                     <h3>Current weather at ${data.place}, ${data.municipality}
                         <select id="historyDates" onchange="loadHistoryDay()">
                             <option value="" disabled selected hidden>Historic data</option>
-                        <select>
+                        </select>
                     </h3>
                     <div class="weather-grid">
                         <div><strong>Temperature</strong></div>
@@ -382,7 +382,7 @@
             fetch(`/history_dates?lat=${lat}&lon=${lon}`)
             .then(r=> r.json())
             .then(data=> {
-                let select = document.getElemntById("historyDates")
+                let select = document.getElementById("historyDates")
                 select.innerHTML= '<option value="" disabled selected hidden>Historic data</option>'
 
                 data.forEach(row=>{
