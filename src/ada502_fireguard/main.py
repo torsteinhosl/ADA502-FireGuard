@@ -195,7 +195,7 @@ def save_midday_weather():
             time.sleep(5)
             data = calculate_weather_data(t.latitude, t.longitude)
             if not data:
-                return
+                continue
         
             for entry in data["forecast"]:
                 timestamp = parser.isoparse(entry["time"])
@@ -573,7 +573,7 @@ def history_dates():
 
 @app.route("/save_the_day")
 def save_the_day():
-    save_midday_weather()
+    return save_midday_weather()
 
 def new_kommune(kommune_navn, fylke):
     kommun = Kommune(
