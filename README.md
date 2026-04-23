@@ -1,5 +1,5 @@
 Velkommen til vårt FireGuard prosjekt!
-Url nettside: http://158.39.75.130:8000/mainpage
+Url nettside: http://158.39.75.130:8000/
 
 For å lage en bruker, klikk på "log in with keycloak" og "register" der. Navn og email trenger ikkje være nøyaktige.
 Du kan søke etter steder, eller:
@@ -23,3 +23,4 @@ Dette vil starte applikasjonen lokalt via Docker Compose.
 
 For at epostfunksjonaliteten skal virke, må det ligges en .env-fil med brukernavn og passord i mappen. Denne skal av sikkerhetsgrunner ikke ligge på github, så ta kontakt med Jonas Edland om det skulle bli relevant å legge til filen.
 
+Prosjektet baserer seg på api.met.no for å få inn værdata, AWS sin database for å lagre data, og Flask, et web-app framework for python. 
