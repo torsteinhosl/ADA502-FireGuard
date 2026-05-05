@@ -27,7 +27,8 @@ Prosjektet baserer seg på api.met.no for å få inn værdata, AWS sin database 
 
 Svakheter ved prosjektet:
 Veldig lite struktur, alt av funksjoner ligger i main.py (det ble gjort pga latskap)
-Dersom man favoriserer et sted må man oppdatere siden for å få den opp i favoritter listen (fikk aldri det til å oppdatere skikkelig)
-Fikk ikke til HTTPS
 Ingen tester (pga latskap og det er et ganske grunneleggende program)
+Fikk ikke til HTTPS
+Ingen encryption mellom endpoints
+Dersom man favoriserer et sted må man oppdatere siden for å få den opp i favoritter listen (fikk aldri det til å oppdatere skikkelig)
 Dersom man velger et sted og ser på fremtidig data, dermed velger et nytt sted, så henger den gamle dataen igjen. 
