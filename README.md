@@ -11,7 +11,7 @@ Steder som ikke er søkbare, og som ikke er submitted vil ikke ha nøyaktig time
 ## Generell "big picture" arkitektur
 Vår FireGuard applikasjon er en containerbasert webapplikasjon bygget med Flask. Systemet følger hovedsakelig en monolittisk arkitektur hvor Flask-applikasjonen håndterer routing, business logic, databasekommunikasjon, værhenting, brannrisikoberegninger og planlagte bakgrunnsoppgaver.
 
-Frontend-en består av server-renderte HTML-maler kombinert med JavaScript og Leaflet for interaktiv kartfunksjonalitet.
+Frontend-en består av HTML-sider generert på serveren, kombinert med JavaScript og Leaflet for interaktiv kartfunksjonalitet.
 
 Autentisering håndteres eksternt gjennom Keycloak via OpenID Connect. Historisk værdata og historisk ttf(time to flashover) lagres i PostgreSQL hostet på AWS RDS.
 
